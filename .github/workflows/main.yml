@@ -10,7 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: unzip -q NothingDrop.zip -d src
+      - name: Unpack zip
+        run: |
+          ZIP="$(ls *.zip | head -n1)"
+          echo "Using $ZIP"
+          unzip -q "$ZIP" -d src
+          DIR="$(dirname "$(find src -name settings.gradle.kts | head -n1)")"
+          echo "PROJECT_DIR=$DIR" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -19,8 +25,8 @@ jobs:
         with:
           gradle-version: "8.9"
       - run: gradle assembleDebug --no-daemon
-        working-directory: src/NothingDrop
+        working-directory: ${{ env.PROJECT_DIR }}
       - name: Publish APK
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "build-${{ github.run_number }}" src/NothingDrop/app/build/outputs/apk/debug/app-debug.apk --title "NothingDrop build ${{ github.run_number }}" --notes "Debug APK"
+        run: gh release create "build-${{ github.run_number }}" "$PROJECT_DIR/app/build/outputs/apk/debug/app-debug.apk" --title "NothingDrop build ${{ github.run_number }}" --notes "Debug APK"
