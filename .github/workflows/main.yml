@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Unpack zip
         run: |
-          ZIP="$(ls *.zip | head -n1)"
+          ZIP="$(ls *.zip | sort -V | tail -n1)"
           echo "Using $ZIP"
           unzip -q "$ZIP" -d src
           DIR="$(dirname "$(find src -name settings.gradle.kts | head -n1)")"
